@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "903512501563",
+    "project_id": "gpexpensetracker-b78f5",
+    "storage_bucket": "gpexpensetracker-b78f5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:903512501563:android:7785a543c39ec364f91b1e",
+        "android_client_info": {
+          "package_name": "com.gpexpensetracker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCT87KzaT7Qomfu48xW4ikFYL4q6dqo5g4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
