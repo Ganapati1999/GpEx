@@ -113,7 +113,9 @@ const RootNavigator = () => {
   useEffect(() => {
     const unsubscribe = auth().onAuthStateChanged(currentUser => {
       setUser(currentUser);
-      setLoading(false);
+      setTimeout(() => {
+        setLoading(false);
+      }, 500);
     });
 
     return unsubscribe;

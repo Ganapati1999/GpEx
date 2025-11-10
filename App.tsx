@@ -11,7 +11,7 @@ import RootNavigator from './src/navigation/root-navigator';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
-
+  console.log('Hermes enabled?', !!(globalThis as any).HermesInternal);
   return (
     <SafeAreaProvider>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />

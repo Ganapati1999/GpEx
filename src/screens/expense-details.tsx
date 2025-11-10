@@ -13,6 +13,7 @@ import {
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/root-navigator';
 import { firestore, auth } from '../config/firebase-config';
+import { IndCurrency } from '../utils/utils';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ExpenseDetail'>;
 
@@ -130,18 +131,20 @@ const ExpenseDetail: React.FC<Props> = ({ route, navigation }) => {
               expense.type === 'in' ? styles.inAmount : styles.outAmount,
             ]}
           >
-            ₹{expense.amount}
+            ₹{IndCurrency(expense?.amount)}
           </Text>
 
           {expense.note ? (
             <>
               <Text style={styles.label}>Note</Text>
-              <Text style={styles.value}>{expense.note}</Text>
+              <Text style={styles.value}>{expense?.note}</Text>
             </>
           ) : null}
 
           <Text style={styles.label}>Balance After</Text>
-          <Text style={styles.value}>₹{expense.balanceAtTime}</Text>
+          <Text style={styles.value}>
+            ₹{IndCurrency(expense?.balanceAtTime)}
+          </Text>
 
           <Text style={styles.label}>Type</Text>
           <Text style={styles.value}>

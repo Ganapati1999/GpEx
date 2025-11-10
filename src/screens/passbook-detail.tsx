@@ -12,7 +12,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/root-navigator';
 import { auth, firestore } from '../config/firebase-config';
 import moment from 'moment';
-import { height } from '../utils/utils';
+import { height, IndCurrency } from '../utils/utils';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'PassbookDetail'>;
 
@@ -130,10 +130,10 @@ const PassbookDetail: React.FC<Props> = ({ navigation, route }) => {
         }
       >
         <View style={{ flex: 1 }}>
-          <Text style={styles.expenseCategory}>{item.category}</Text>
+          <Text style={styles.expenseCategory}>{item?.category}</Text>
           <Text style={styles.expenseDate}>{date}</Text>
           {item.note ? (
-            <Text style={styles.expenseNote}>{item.note}</Text>
+            <Text style={styles.expenseNote}>{item?.note}</Text>
           ) : null}
         </View>
 
@@ -144,11 +144,13 @@ const PassbookDetail: React.FC<Props> = ({ navigation, route }) => {
               { color: item.type === 'in' ? 'green' : 'red' },
             ]}
           >
-            {item.type === 'in' ? '+' : '-'} ₹{item.amount}
+            {item.type === 'in' ? '+' : '-'} ₹{IndCurrency(item?.amount)}
           </Text>
           {item.note && <Text style={styles.expenseDate}></Text>}
           {item.balanceAtTime !== undefined && (
-            <Text style={styles.balanceAtTime}>Bal: ₹{item.balanceAtTime}</Text>
+            <Text style={styles.balanceAtTime}>
+              Bal: ₹{IndCurrency(item?.balanceAtTime)}
+            </Text>
           )}
         </View>
       </TouchableOpacity>
@@ -164,12 +166,14 @@ const PassbookDetail: React.FC<Props> = ({ navigation, route }) => {
       {/* Top Card */}
       <View style={styles.topCard}>
         <Text style={styles.netBalance}>
-          Net Balance: ₹{totals.netBalance.toFixed(2)}
+          Net Balance: ₹{IndCurrency(totals?.netBalance)}
         </Text>
         <View style={styles.totalsRow}>
-          <Text style={styles.totalIn}>In: ₹{totals.totalIn.toFixed(2)}</Text>
+          <Text style={styles.totalIn}>
+            In: ₹{IndCurrency(totals?.totalIn)}
+          </Text>
           <Text style={styles.totalOut}>
-            Out: ₹{totals.totalOut.toFixed(2)}
+            Out: ₹{IndCurrency(totals.totalOut)}
           </Text>
         </View>
       </View>

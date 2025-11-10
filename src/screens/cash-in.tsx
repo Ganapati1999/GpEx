@@ -74,11 +74,11 @@ const CashIn: React.FC<Props> = ({ route, navigation }) => {
   // Pre-fill existing data if editing
   useEffect(() => {
     if (expense) {
-      setAmount(String(expense.amount));
-      setCategory(expense.category);
-      setNote(expense.note);
+      setAmount(String(expense?.amount));
+      setCategory(expense?.category);
+      setNote(expense?.note);
     }
-  }, [expense]);
+  }, [expense, categories]);
 
   // Add category to inCategories
   const addCategoryToFirestore = async () => {
