@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   RefreshControl,
   Alert,
+  TextInput,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import {
@@ -15,6 +16,7 @@ import {
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/root-navigator';
+import Modal from 'react-native-modal';
 import { auth, firestore } from '../config/firebase-config';
 import { IndCurrency } from '../utils/utils';
 import { authenticateBiometric, isBiometricAvailable } from '../utils/bioatrix'; // 🔐
@@ -31,6 +33,11 @@ const Home: React.FC<Props> = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [passbooks, setPassbooks] = useState<Passbook[]>([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [newPassbookName, setNewPassbookName] = useState('');
+  const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [locked, setLocked] = useState(true); // 🔐 locked initially
   const [authInProgress, setAuthInProgress] = useState(true);
@@ -124,6 +131,45 @@ const Home: React.FC<Props> = () => {
     return unsubscribe;
   }, [user]);
 
+  const handleAddPassbook = async () => {
+    if (!newPassbookName.trim()) return;
+
+    setLoading(true);
+    try {
+      await firestore()
+        .collection('passbooks')
+        .doc(user!.uid)
+        .collection('userPassbooks')
+        .add({
+          name: newPassbookName.trim(),
+          updatedAt: firestore.FieldValue.serverTimestamp(),
+        });
+      setNewPassbookName('');
+      setModalVisible(false);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleDeletePassbook = async () => {
+    if (!user || !deleteId) return;
+    setLoading(true);
+    try {
+      await firestore()
+        .collection('passbooks')
+        .doc(user.uid)
+        .collection('userPassbooks')
+        .doc(deleteId)
+        .delete();
+      setDeleteModalVisible(false);
+      setDeleteId(null);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
   // 🕶️ Initial screen before auth completes
   if (authInProgress) {
     return (
@@ -171,6 +217,10 @@ const Home: React.FC<Props> = () => {
           passbookName: item.name,
         })
       }
+      onLongPress={() => {
+        setDeleteId(item.id);
+        setDeleteModalVisible(true);
+      }}
     >
       <View>
         <Text style={styles.passbookTitle}>{item.name}</Text>
@@ -196,7 +246,9 @@ const Home: React.FC<Props> = () => {
     <View style={styles.container}>
       <TouchableOpacity
         style={styles.addButton}
-        onPress={() => Alert.alert('Add', 'Open your add modal here')}
+        onPress={() => {
+          setModalVisible(true);
+        }}
       >
         <Text style={styles.addButtonText}>+ Add Passbook</Text>
       </TouchableOpacity>
@@ -212,6 +264,75 @@ const Home: React.FC<Props> = () => {
           <RefreshControl refreshing={refreshing} onRefresh={fetchPassbooks} />
         }
       />
+      <Modal
+        isVisible={modalVisible}
+        onBackdropPress={() => setModalVisible(false)}
+        style={styles.bottomModal}
+        animationIn="slideInUp"
+        animationOut="slideOutDown"
+      >
+        <View style={styles.modalContent}>
+          <Text style={styles.modalTitle}>New Passbook</Text>
+          <TextInput
+            placeholder="Enter passbook name"
+            value={newPassbookName}
+            onChangeText={setNewPassbookName}
+            style={styles.modalInput}
+          />
+          <TouchableOpacity
+            style={styles.modalButton}
+            onPress={handleAddPassbook}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.modalButtonText}>Create</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isVisible={deleteModalVisible}
+        onBackdropPress={() => setDeleteModalVisible(false)}
+        style={styles.bottomModal}
+        animationIn="slideInUp"
+        animationOut="slideOutDown"
+      >
+        <View style={styles.modalContent}>
+          <Text style={styles.modalTitle}>Delete Passbook?</Text>
+          <Text style={{ marginBottom: 15 }}>
+            Are you sure you want to delete this passbook?
+          </Text>
+          <View
+            style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+          >
+            <TouchableOpacity
+              style={[
+                styles.modalButton,
+                { backgroundColor: '#ccc', flex: 0.45 },
+              ]}
+              onPress={() => setDeleteModalVisible(false)}
+            >
+              <Text style={{ ...styles.modalButtonText, color: '#000' }}>
+                Cancel
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.modalButton, { flex: 0.45 }]}
+              onPress={handleDeletePassbook}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.modalButtonText}>Delete</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -269,4 +390,27 @@ const styles = StyleSheet.create({
   passbookTitle: { fontSize: 16, fontWeight: '700', color: '#333' },
   passbookDate: { fontSize: 12, color: '#004d40', marginTop: 2 },
   passBookAmount: { fontSize: 18, fontWeight: '700' },
+
+  bottomModal: { justifyContent: 'flex-end', margin: 0 },
+  modalContent: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderTopRightRadius: 16,
+    borderTopLeftRadius: 16,
+  },
+  modalTitle: { fontSize: 18, fontWeight: '700', marginBottom: 15 },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 15,
+  },
+  modalButton: {
+    backgroundColor: '#2575fc',
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalButtonText: { color: '#fff', fontWeight: '700', fontSize: 16 },
 });

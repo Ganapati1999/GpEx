@@ -15,6 +15,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/root-navigator';
 import { auth, firestore } from '../config/firebase-config';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import ZeroState from './common/zerostate';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CashOut'>;
 
@@ -57,7 +58,6 @@ const CashOut: React.FC<Props> = ({ route, navigation }) => {
             name: doc.data().name,
           }));
           setCategories(cats);
-          if (cats.length > 0 && !category) setCategory(cats[0].name);
           setFetching(false);
         },
         error => {
@@ -217,6 +217,8 @@ const CashOut: React.FC<Props> = ({ route, navigation }) => {
 
         {fetching ? (
           <ActivityIndicator size="small" color="#FF3B30" />
+        ) : categories.length == 0 ? (
+          <ZeroState message="No categories found" />
         ) : (
           <View style={styles.categoryContainer}>
             {categories.map(cat => (

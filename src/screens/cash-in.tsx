@@ -16,6 +16,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/root-navigator';
 import { auth, firestore } from '../config/firebase-config';
+import ZeroState from './common/zerostate';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CashIn'>;
 
@@ -58,8 +59,6 @@ const CashIn: React.FC<Props> = ({ route, navigation }) => {
             name: doc.data().name,
           }));
           setCategories(userCategories);
-          if (userCategories.length > 0 && !category)
-            setCategory(userCategories[0].name);
           setFetching(false);
         },
         error => {
@@ -202,26 +201,27 @@ const CashIn: React.FC<Props> = ({ route, navigation }) => {
   return (
     <>
       <ScrollView contentContainerStyle={styles.container}>
-        {fetching ? (
-          <ActivityIndicator size="large" color="#4CAF50" />
-        ) : (
-          <>
-            <Text style={styles.label}>Amount</Text>
-            <TextInput
-              style={styles.input}
-              value={amount}
-              onChangeText={setAmount}
-              keyboardType="numeric"
-              placeholder="Enter amount"
-            />
+        <>
+          <Text style={styles.label}>Amount</Text>
+          <TextInput
+            style={styles.input}
+            value={amount}
+            onChangeText={setAmount}
+            keyboardType="numeric"
+            placeholder="Enter amount"
+          />
 
-            <View style={styles.categoryHeader}>
-              <Text style={styles.label}>Category</Text>
-              <TouchableOpacity onPress={() => setShowAddModal(true)}>
-                <Icon name="add-circle-outline" size={24} color="#4CAF50" />
-              </TouchableOpacity>
-            </View>
-
+          <View style={styles.categoryHeader}>
+            <Text style={styles.label}>Category</Text>
+            <TouchableOpacity onPress={() => setShowAddModal(true)}>
+              <Icon name="add-circle-outline" size={24} color="#4CAF50" />
+            </TouchableOpacity>
+          </View>
+          {fetching ? (
+            <ActivityIndicator size="small" color="#FF3B30" />
+          ) : categories.length == 0 ? (
+            <ZeroState message="No categories found" />
+          ) : (
             <View style={styles.categoryContainer}>
               {categories.map(cat => (
                 <TouchableOpacity
@@ -247,30 +247,30 @@ const CashIn: React.FC<Props> = ({ route, navigation }) => {
                 </TouchableOpacity>
               ))}
             </View>
+          )}
 
-            <Text style={styles.label}>Note</Text>
-            <TextInput
-              style={styles.input}
-              value={note}
-              onChangeText={setNote}
-              placeholder="Enter note"
-            />
+          <Text style={styles.label}>Note</Text>
+          <TextInput
+            style={styles.input}
+            value={note}
+            onChangeText={setNote}
+            placeholder="Enter note"
+          />
 
-            <TouchableOpacity
-              style={[styles.button, { backgroundColor: '#4CAF50' }]}
-              onPress={handleSubmit}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>
-                  {expense ? 'Update Entry' : 'Add Cash In'}
-                </Text>
-              )}
-            </TouchableOpacity>
-          </>
-        )}
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: '#4CAF50' }]}
+            onPress={handleSubmit}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>
+                {expense ? 'Update Entry' : 'Add Cash In'}
+              </Text>
+            )}
+          </TouchableOpacity>
+        </>
       </ScrollView>
 
       {/* Add Category Modal */}
